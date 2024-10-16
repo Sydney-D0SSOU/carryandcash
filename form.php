@@ -10,10 +10,11 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
     <link rel="stylesheet" href="./css/form.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         let currentSlide = 0;
+        let selectedNetworkNumber = "";
 
         function showSlide(index) {
             const slides = document.getElementsByClassName('slide');
@@ -22,21 +23,67 @@
             }
             slides[index].style.display = 'block';
             currentSlide = index;
+
+            if (currentSlide === 3) {
+                updateTransactionCode();
+            }
         }
 
         function nextSlide() {
-            showSlide(currentSlide + 1);
+            const slides = document.getElementsByClassName('slide');
+            const currentForm = slides[currentSlide].querySelectorAll('input, select');
+
+            let allFilled = true;
+            currentForm.forEach(field => {
+                if (field.hasAttribute('required') && !field.value) {
+                    allFilled = false;
+                }
+            });
+
+            if (allFilled) {
+                showSlide(currentSlide + 1);
+            } else {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Champs manquants',
+                    text: 'Veuillez remplir tous les champs requis avant de continuer.'
+                });
+            }
         }
 
         function prevSlide() {
             showSlide(currentSlide - 1);
         }
+
         function calculateCash() {
             var montant = document.getElementById('montant').value;
-            var cash = montant-(montant * <?php echo ($rate); ?>);
+            var cash = montant - (montant * <?php echo ($rate); ?>);
             document.getElementById('cash').value = cash.toFixed(2);
         }
+
+        function updateNetworkNumber() {
+            const network = document.getElementById('network').value;
+            if (network === 'mtn') {
+                selectedNetworkNumber = '54549537';
+            } else if (network === 'moov') {
+                selectedNetworkNumber = '94799374';
+            } else if (network === 'celtis') {
+                selectedNetworkNumber = '43798491';
+            }
+        }
+
+        function updateTransactionCode() {
+            const codeElement = document.getElementById('transactionCode');
+            codeElement.textContent = `*102*Montant*${selectedNetworkNumber}*Code#`;
+        }
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const networkSelect = document.getElementById('network');
+            networkSelect.addEventListener('change', updateNetworkNumber);
+            updateNetworkNumber();
+        });
     </script>
+
 </head>
 <body onload="showSlide(0)">
     <div class="container d-flex flex-column justify-content-center align-items-center vh-100">
@@ -55,6 +102,9 @@
                     <label for="cash" class="form-label">Cash possible</label>
                     <input type="text" id="cash" name="cash_possible" class="form-control mt-2" placeholder="0" readonly>
                 </div>
+                <button type="button" class="arrow-btn mt-4 mr-2" onclick="prevSlide()">
+                    <a href="index.php"><i class="fas fa-arrow-left"></i> </a>
+                </button>
                 <button type="button" class="arrow-btn mt-4" onclick="nextSlide()">
                     <i class="fas fa-arrow-right"></i>
                 </button>
@@ -93,11 +143,12 @@
                     <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
+
             <!-- Slide 4: Instructions et ID de la transaction -->
             <div class="slide">
                 <h3>Envoyez le crédit</h3>
                 <p class="mt-4">Veuillez taper un de ces codes pour nous envoyer le crédit :</p>
-                <p class="mt-2"><strong>*102*Montant*Numéro*Code#</strong></p>
+                <p class="mt-2"><strong id="transactionCode">*102*Montant*Numéro*Code#</strong></p>
                 <div class="form-group mt-4">
                     <label for="transactionId" class="form-label">ID de la transaction</label>
                     <input type="text" id="transactionId" name="transaction_id" class="form-control mt-2" placeholder="ID de la transaction" required>
@@ -108,13 +159,14 @@
                 <button type="button" class="arrow-btn mt-4 ml-2" onclick="nextSlide()">
                     <i class="fas fa-arrow-right"></i>
                 </button>
-            </div>.
-             <!-- Slide 5: Choix du réseau de reception -->
-             <div class="slide">
+            </div>
+
+            <!-- Slide 5: Choix du réseau de reception -->
+            <div class="slide">
                 <h3>Choisissez votre réseau</h3>
                 <div class="form-group mt-4">
-                    <label for="network" class="form-label">Réseau</label>
-                    <select id="network" name="reception_network" class="form-control">
+                    <label for="reception_network" class="form-label">Réseau</label>
+                    <select id="reception_network" name="reception_network" class="form-control">
                         <option value="celtis">Celtis</option>
                         <option value="moov">Moov</option>
                         <option value="mtn">MTN</option>
@@ -127,6 +179,7 @@
                     <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
+
             <!-- Slide 6: Informations de réception -->
             <div class="slide">
                 <h3>Informations de réception</h3>
@@ -143,9 +196,6 @@
                 </button>
                 <button class="btn btn-success mt-4" type="submit">Terminer</button>
             </div>
-
-
-            
         </form>
     </div>
 </body>

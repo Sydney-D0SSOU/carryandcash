@@ -17,7 +17,7 @@
                 title: "Succès",
                 text: "Les données ont été enregistrées avec succès."
             }).then(function() {
-                window.location = "../index.php"; // Page de confirmation
+                window.location.href = "../index.php"; // Assurez-vous que le chemin est correct
             });
         </script>';
     } else {
@@ -26,6 +26,8 @@
                 icon: "error",
                 title: "Erreur",
                 text: "Une erreur s\'est produite lors de l\'enregistrement des données."
+            }).then(function() {
+                window.location.href = "../index.php"; // Assurez-vous que le chemin est correct
             });
         </script>';
     }
